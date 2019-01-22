@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"fmt"
 	lua "github.com/yuin/gopher-lua"
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -13,6 +14,20 @@ type Datarows struct {
 }
 
 const luaDatarowsTypeName = "datarows"
+
+const numStyle =  `{"border":[{"type":"left","color":"000000","style":1},
+{"type":"top","color":"000000","style":1},
+{"type":"bottom","color":"000000","style":1},
+{"type":"right","color":"000000","style":1}],
+"number_format":4}`
+
+const titleStyle = `{"border":[{"type":"left","color":"000000","style":1},
+		{"type":"top","color":"000000","style":1},
+		{"type":"bottom","color":"000000","style":1},
+		{"type":"right","color":"000000","style":1}],
+		"font":{"bold":true,"size":10},
+		"alignment":{"horizontal":"center","vertical":"center"}}`
+    
 
 func registerDatarowsType(L *lua.LState) {
     mt := L.NewTypeMetatable(luaDatarowsTypeName)
@@ -36,7 +51,7 @@ func newDatarows(L *lua.LState) int {
     return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *dataRows and returns this *Datarows.
+// Checks whether the first lua argument is a *LUserData with *Person and returns this *Datarows.
 func checkDatarows(L *lua.LState) *Datarows {
     ud := L.CheckUserData(1)
     if v, ok := ud.Value.(*Datarows); ok {
@@ -66,8 +81,27 @@ func datarowsSet(L *lua.LState) int {
 	p := checkDatarows(L)
 	axis := L.CheckString(2)
 	value := L.CheckString(3)
-	p.xlsx.SetCellValue(p.sheetname,axis,value)
-    return 1
+
+	if len(axis) == 2 {
+		//数字样式
+    	numstyle, err := p.xlsx.NewStyle(numStyle)
+    	if err != nil {
+		 	fmt.Println(err)
+		} 
+		value1, _ := strconv.ParseFloat(value,64) 
+		p.xlsx.SetCellValue(p.sheetname,axis,value1)
+		p.xlsx.SetCellStyle(p.sheetname, axis, axis,numstyle)
+	}else {
+		//标题样式
+    	titlestyle, err := p.xlsx.NewStyle(titleStyle)
+    	if err != nil {
+		 	fmt.Println(err)
+		} 
+		p.xlsx.MergeCell(p.sheetname, []byte(axis)[0]+[]byte(axis)[-1], []byte(axis)[-2]+[]byte(axis)[-1])
+		p.xlsx.SetCellValue(p.sheetname,axis,value)
+		p.xlsx.SetCellStyle(p.sheetname, axis, axis, titlestyle)
+	}
+	return 1
 }
 
 // Setter for the Datarows row, col 
@@ -91,6 +125,9 @@ func readExcel(filename , sheetname string) (*excelize.File){
 	return xlsx
 }
 
+
+
+
 func main() {
 	L := lua.NewState()
 	defer L.Close()
@@ -100,7 +137,7 @@ func main() {
 	if err := L.DoFile(`business.lua`); err != nil {
     	panic(err)
 	}
-	if err := L.DoString(`computefile("","平台展示")`); err != nil {
+	if err := L.DoString(`computefile("MA4UHNUR-9_珠海市广恒盛基金管理企业（有限合伙）_2018年四季度_全价_应税台账汇总表.xlsx","平台展示")`); err != nil {
     	panic(err)
 	}
 }
