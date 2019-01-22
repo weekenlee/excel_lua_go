@@ -28,15 +28,15 @@ func newDatarows(L *lua.LState) int {
 	filename := L.CheckString(1)
 	sheetname := L.CheckString(2)
 	xlsx := readExcel(filename,sheetname)
-    person := &Datarows{filename,sheetname,xlsx}
+    dataRows := &Datarows{filename,sheetname,xlsx}
     ud := L.NewUserData()
-    ud.Value = person
+    ud.Value = dataRows 
     L.SetMetatable(ud, L.GetTypeMetatable(luaDatarowsTypeName))
     L.Push(ud)
     return 1
 }
 
-// Checks whether the first lua argument is a *LUserData with *Person and returns this *Datarows.
+// Checks whether the first lua argument is a *LUserData with *dataRows and returns this *Datarows.
 func checkDatarows(L *lua.LState) *Datarows {
     ud := L.CheckUserData(1)
     if v, ok := ud.Value.(*Datarows); ok {
