@@ -25,7 +25,7 @@ function setclass(name, super)
         new = 
             function(self, ...) 
                 local obj = super.new(self, "___CREATE_ONLY___")
-                if(super.methods.init) then
+                if(super.methods.init ) then
                     obj.init_super = super.methods.init
                 end
 
@@ -51,5 +51,7 @@ function setclass(name, super)
     setmetatable(class.methods, {
         __index = function(self, key) return class.super.methods[key] end
     })
+
+    return class
 
 end
