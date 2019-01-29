@@ -20,16 +20,17 @@ function setclass(name, super)
     end
 
     local class = {
-        super = super,
-        name = name,
+        super = super;
+        name = name;
         new = 
             function(self, ...) 
-                local obj = super.new(self, "___CREATE_ONLY___")
-                if(super.methods.init ) then
+                local obj = super.new(self, "___CREATE_ONLY___");
+                if(super.methods.init) then
                     obj.init_super = super.methods.init
                 end
 
                 if(self.methods.init) then
+                    print(arg[1])
                     if (tostring(arg[1]) ~= "___CREATE_ONLY___") then
                         obj.init = self.methods.init
                         if obj.init then
